@@ -34,7 +34,7 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 				IsPublic: gofakeit.Bool(),
 			},
 			CreatedAt: timestamppb.New(gofakeit.Date()),
-			Updated:   timestamppb.New(gofakeit.Date()),
+			UpdateAt:  timestamppb.New(gofakeit.Date()),
 		},
 	}, nil
 }
@@ -47,7 +47,7 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegistrNoteV1Server(s, &server{})
+	desc.RegisterNoteV1Server(s, &server{})
 
 	fmt.Printf("servr listening at: %v", grpcPort)
 

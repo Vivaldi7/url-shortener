@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"github.com/brianvoe/gofakeit"
-	"google.golang.org/grpc/encoding/proto"
+	_ "google.golang.org/grpc/encoding/proto"
+	"google.golang.org/protobuf/proto"
 
 	desc "github.com/vivaldi7/golang_code/mic_curce/grpc/pkg/note_v1"
 )
@@ -19,7 +20,7 @@ func main() {
 	}
 
 	dataJson, _ := json.Marshal(session)
-	fmt.Printf("\n\ndataJson len %d byte \n%v\n", len(dataJson), dataJson)
+	fmt.Printf("\n\n dataJson len %d byte \n%v\n", len(dataJson), dataJson)
 
 	dataPb, _ := proto.Marshal(session)
 	fmt.Printf("dataPb len %d byte \n%v\n", len(dataPb), dataPb)

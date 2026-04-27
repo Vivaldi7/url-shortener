@@ -22,7 +22,7 @@ message NoteInfo {
     bool is_public = 4;
 }
 
-message Note{
+message Note {
     int64 id = 1;
     NoteInfo info = 2;
     google.protobuf.Timestamp created_at = 3;
@@ -49,7 +49,7 @@ message GetRequest {
 }
 
 message GetResponse {
-    NoteInfo info = 1;
+    Note note = 1;
 }
 
 message ListRequest {
