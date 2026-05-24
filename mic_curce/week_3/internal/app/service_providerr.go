@@ -4,8 +4,10 @@ import (
 	"context"
 	"log"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	//	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/api/note"
+	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/client/db"
+	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/client/db/pg"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/closer"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/config"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/repository"
@@ -25,7 +27,8 @@ import (
 type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
-	pgPool     *pgxpool.Pool
+	dbClient   db.Client
+	//	pgPool     *pgxpool.Pool
 
 	noteRepository repository.NoteRepository
 	noteService    service.NoteService
@@ -58,41 +61,41 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
-func (s *serviceProvider) PGPool(ctx context.Context) *pgxpool.Pool {
-	if s.pgPool == nil {
-		pool, err := pgxpool.Connect(ctx, s.PGConfig().DSN())
+func (s *serviceProvider) DBCClient(ctx context.Context) db.Client {
+	if s.dbClient == nil {
+		cl, err := pg.New(ctx, s.PGConfig().DSN())
 		if err != nil {
 			log.Fatalf("failed to connect to database: %v", err)
 		}
 
-		err = pool.Ping(ctx)
+		err = cl.DB().Ping(ctx)
 		if err != nil {
 			log.Fatalf("ping error: %v", err)
 		}
-		closer.Add(func() error {
-			pool.Close()
-			return nil
-		})
+		closer.Add(cl.Close)
 
-		s.pgPool = pool
+		s.dbClient = cl
 	}
-	return s.pgPool
+	return s.dbClient
 }
 
-func (s *serviceProvider) NoteRepositore(ctx contex.Context) repositore.NoteRepositore {
-	if s.noteRepositore == nil {
-		s.noteRepositore = noteRepositore.NewRepositore(s.PGPool(ctx))
+func (s *serviceProvider) NoteRepositore(ctx context.Context) repository.NoteRepository {
+	if s.noteRepository == nil {
+		s.noteRepository = noteRepositore.NewRepository(s.DBCClient(ctx))
 	}
+	return s.noteRepository
 }
 
 func (s *serviceProvider) NoteService(ctx context.Context) service.NoteService {
 	if s.noteService == nil {
 		s.noteService = noteService.NewService(s.NoteRepositore(ctx))
 	}
+	return s.noteService
 }
 
-func (s *serviceProvider) noteImpl(ctx context.Context) *note.Implementation {
+func (s *serviceProvider) GetnoteImpl(ctx context.Context) *note.Implementation {
 	if s.noteImpl == nil {
 		s.noteImpl = note.NewImplementation(s.NoteService(ctx))
 	}
+	return s.noteImpl
 }

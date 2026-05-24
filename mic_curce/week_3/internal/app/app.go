@@ -72,7 +72,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
 
 	reflection.Register(a.grpcServer)
-	desc.RegisterNoteV1Server(a.grpcServer, a.serviceProvider.noteImpl(ctx))
+	desc.RegisterNoteV1Server(a.grpcServer, a.serviceProvider.GetnoteImpl(ctx))
 
 	return nil
 }

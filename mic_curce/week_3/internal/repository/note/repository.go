@@ -2,15 +2,15 @@ package note
 
 import (
 	"context"
-	"log"
+	//	"log"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
+	//	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/client/db"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/model"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/repository"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/repository/note/converter"
 	modelRepo "github.com/vivaldi7/golang_code/mic_curce/week_3/internal/repository/note/model"
-	//	desc "github.com/vivaldi7/golang_code/mic_curce/week_3/pkg/note_v1"
 )
 
 const (
@@ -23,10 +23,10 @@ const (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
-func NewRepository(db *pgxpool.Pool) repository.NoteRepository {
+func NewRepository(db db.Client) repository.NoteRepository {
 	return &repo{db: db}
 }
 
@@ -39,14 +39,21 @@ func (r *repo) Create(ctx context.Context, info *model.NoteInfo) (int64, error) 
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		log.Fatalf("failed to build query: %v", err)
+		//		log.Fatalf("failed to build query: %v", err)
+		return 0, err
+	}
+
+	q := db.Query{
+		Name:     "note_repositore.Create",
+		QueryRaw: query,
 	}
 
 	var id int64
 
-	err = r.db.QueryRow(ctx, query, args...).Scan(&id)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&id)
 	if err != nil {
-		log.Fatalf("failed to insert notes: %v", err)
+		//		log.Fatalf("failed to insert notes: %v", err)
+		return 0, err
 	}
 	return id, nil
 }
@@ -60,15 +67,21 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.Note, error) {
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		log.Fatalf("Failed to build query: %v", err)
+		//		log.Fatalf("Failed to build query: %v", err)
+		return nil, err
+	}
+
+	q := db.Query{
+		Name:     "note_repositore.Get",
+		QueryRaw: query,
 	}
 
 	var note modelRepo.Note
-	note.Info = &modelRepo.NoteInfo{}
 
-	err = r.db.QueryRow(ctx, query, args...).Scan(&note.ID, &note.Info.Title, &note.Info.Content, &note.CreatedAt, &note.UpdateAt)
+	err = r.db.DB().ScanOneContext(ctx, &note, q, args...)
 	if err != nil {
-		log.Fatalf("Failed to select note: %v", err)
+		//		log.Fatalf("Failed to select note: %v", err)
+		return nil, err
 	}
 
 	return converter.ToNoteFromRepo(&note), nil
