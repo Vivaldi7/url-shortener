@@ -1,4 +1,4 @@
-module github.com/vivaldi7/golang_code/mic_curce/week_3
+module github.com/vivaldi7/golang_code/mic_curce/week_4
 
 go 1.25.6
 
@@ -11,6 +11,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.11.1
+	github.com/vivaldi7/golang_code/mic_curce/week_3 v0.0.0-20260528184400-4f7b4aab377e
 	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
 )
