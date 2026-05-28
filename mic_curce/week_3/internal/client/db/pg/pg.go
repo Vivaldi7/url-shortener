@@ -29,6 +29,11 @@ func NewDB(dbc *pgxpool.Pool) db.DB {
 	}
 }
 
+// этот метод пришлось обавить так как на наботало func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager
+func (p *pg) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) {
+	return p.dbc.BeginTx(ctx, txOptions)
+}
+
 func (p *pg) ScanOneContext(ctx context.Context, dest interface{}, q db.Query, args ...interface{}) error {
 	logQuery(ctx, q, args...)
 

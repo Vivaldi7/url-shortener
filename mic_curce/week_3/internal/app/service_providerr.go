@@ -8,6 +8,7 @@ import (
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/api/note"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/client/db"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/client/db/pg"
+	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/client/db/transaction"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/closer"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/config"
 	"github.com/vivaldi7/golang_code/mic_curce/week_3/internal/repository"
@@ -27,7 +28,9 @@ import (
 type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
-	dbClient   db.Client
+
+	dbClient  db.Client
+	txManager db.TxManager
 	//	pgPool     *pgxpool.Pool
 
 	noteRepository repository.NoteRepository
@@ -79,6 +82,14 @@ func (s *serviceProvider) DBCClient(ctx context.Context) db.Client {
 	return s.dbClient
 }
 
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.DBCClient(ctx).DB())
+	}
+
+	return s.txManager
+}
+
 func (s *serviceProvider) NoteRepositore(ctx context.Context) repository.NoteRepository {
 	if s.noteRepository == nil {
 		s.noteRepository = noteRepositore.NewRepository(s.DBCClient(ctx))
@@ -88,7 +99,10 @@ func (s *serviceProvider) NoteRepositore(ctx context.Context) repository.NoteRep
 
 func (s *serviceProvider) NoteService(ctx context.Context) service.NoteService {
 	if s.noteService == nil {
-		s.noteService = noteService.NewService(s.NoteRepositore(ctx))
+		s.noteService = noteService.NewService(
+			s.NoteRepositore(ctx),
+			s.TxManager(ctx),
+		)
 	}
 	return s.noteService
 }

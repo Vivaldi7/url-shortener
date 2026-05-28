@@ -17,7 +17,7 @@ type Client interface {
 }
 
 type TxManager interface {
-	ReedCommitted(ctx context.Context, f Handler) error
+	ReadCommitted(ctx context.Context, f Handler) error
 }
 
 // Query обертка над запросом хранящая сам запрос
@@ -60,4 +60,5 @@ type DB interface {
 	SQLExecer
 	Pinger
 	Close()
+	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) ////этот метод пришлось обавить так как на наботало func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager
 }

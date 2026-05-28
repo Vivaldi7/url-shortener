@@ -14,7 +14,7 @@ type manager struct {
 }
 
 // NewTransactionManager создает новый менеджер транзакций который удовлетворяет интерфесу db.TxManager
-func NewTransactionManager(db db.Transaction) db.TxManager {
+func NewTransactionManager(db db.Transactor) db.TxManager {
 	return &manager{
 		db: db,
 	}
@@ -42,7 +42,7 @@ func (m *manager) transaction(ctx context.Context, opts pgx.TxOptions, fn db.Han
 		if r := recover(); r != nil {
 			err = errors.Errorf("Panic recoverd: %v", r)
 		}
-
+		//Откатываем транзакцию если произошла ошибка
 		if err != nil {
 			if errRollback := tx.Rollback(ctx); errRollback != nil {
 				err = errors.Wrapf(err, "errRollback: %v", errRollback)
